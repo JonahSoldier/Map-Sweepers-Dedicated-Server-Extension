@@ -1,6 +1,7 @@
 -- Dedicated Server Expansion for Map Sweepers by Octantis Addons (MerekiDor & JonahSoldier)
 if not(engine.ActiveGamemode() == "mapsweepers") then return end 
 include("jcms_serverExt/shared.lua")
+AddCSLuaFile("autorun/client/cl_init.lua")
 
 -- // Utils {{{
 	function jcms.ServerExtension_GetPlyFromStr( str )
@@ -32,7 +33,7 @@ include("jcms_serverExt/shared.lua")
 			--Ban the fucker
 			local duration = jcms.cvar_votekickTime:GetInt()
 			ply:Ban(duration, false )
-			ply:Kick( "Vote-kicked. You will be able to return in " .. tostring(duration) .. " minutes." )
+			ply:Kick( "Vote-kicked. You will be able to return in " .. tostring(duration) .. " minutes" )
 
 			return true -- kicked
 		end
@@ -79,7 +80,7 @@ include("jcms_serverExt/shared.lua")
 		PrintMessage(HUD_PRINTTALK, ply:Name() .." voted to kick " .. targetStr .. " " .. fracString )
 
 		--Kick the guy (if there are enough votes)
-		jcms.ServerExtension_CheckShouldKick(ply)
+		jcms.ServerExtension_CheckShouldKick(targetPly)
 		return ""
 	end)
 -- // }}}
