@@ -1,6 +1,6 @@
 -- Dedicated Server Expansion for Map Sweepers by Octantis Addons (MerekiDor & JonahSoldier)
 if not(engine.ActiveGamemode() == "mapsweepers") then return end 
-include("jcms_serverExt/shared.lua")
+include("jcms_serverext/shared.lua")
 AddCSLuaFile("autorun/client/cl_init.lua")
 
 -- // Utils {{{

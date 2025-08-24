@@ -1,5 +1,5 @@
 if not(engine.ActiveGamemode() == "mapsweepers") then return end
-include("jcms_serverExt/shared.lua")
+include("jcms_serverext/shared.lua")
 
 jcms.serverExtension_voteKickIndex = 1
 
@@ -17,4 +17,11 @@ hook.Add("OnChatTab", "jcms_serverExtension_chatTab_votekick", function(text)
 	local nick = allPlys[ind]:Nick()
 
 	return "!votekick " .. nick
+end)
+
+hook.Add("MapSweepersScoreboardPlayerMenu", "jcms_serverExtension_scoreboard", function(m, elem, ply, i)
+	m:AddSpacer()
+	m:AddOption("Votekick", function()
+		RunConsoleCommand("say", "!votekick " .. ply:Nick())
+	end)
 end)
