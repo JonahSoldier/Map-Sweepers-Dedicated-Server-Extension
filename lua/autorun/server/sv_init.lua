@@ -123,14 +123,34 @@ include("jcms_serverExt/shared.lua")
 	local function evacSuddenDeathThink()
 		local cTime = CurTime()
 		if jcms.evacSuddenDeath_nextThink > cTime then return end
+
+		local timeNuking = cTime - jcms.evacSuddenDeath_startTime
+
+		local pos
+		if timeNuking < 1.5 * 60 then
+			local origins = {}
+			local swps = team.GetPlayers(1)
+			for i, swp in ipairs(swps) do 
+				table.insert(origins, swp:WorldSpaceCenter())
+			end
+			
+			local frac = 1 - timeNuking / (60 * 1.5) --Scale to 0 over 1.5 mins
+			local areas = jcms.director_GetAreasAwayFrom(jcms.mapdata.validAreas, origins, 1500 * frac, 3500 * frac)
+			
+			local weightedAreas = {}
+			for i, area in ipairs(areas) do
+				weightedAreas[area] = area:GetSizeX() * area:GetSizeY()
+			end
+
+			local chosenArea = jcms.util_ChooseByWeight(weightedAreas) or jcms.mapgen_UseRandomArea() --fallback to random if no valid areas.
+			pos = chosenArea:GetCenter() + Vector(0,0,50)
+		else
+			--If they're somehow still alive >1.5 min just nuke the bastards directly.
+			local swps = team.GetPlayers(1)
+			pos = swps[math.random(#swps)]:WorldSpaceCenter()
+		end
 		
-		--Pick a random player, drop a nuke near them. 
-		--local allPlys = player.GetAll()
-		--local chosen = allPlys[math.random(#allPlys)]
-		
-		--TODO: Pick a random area a certain distance from a player, and shrink that distance over time (reaching 0 at 2.5 mins)
-		
-		jcms.ServerExtension_NukePosition(jcms.mapgen_UseRandomArea():GetCenter()) --TODO: PLACEHOLDER
+		jcms.ServerExtension_NukePosition(pos)
 		
 		jcms.evacSuddenDeath_nextThink = cTime + 10
 	end
@@ -140,6 +160,8 @@ include("jcms_serverExt/shared.lua")
 		
 		local d = jcms.director
 		if not d then return false end 
+
+		local nukeTime = 3
 		
 		--Force evacuate.
 		if not d.missionData.evacuating then
@@ -149,10 +171,19 @@ include("jcms_serverExt/shared.lua")
 			--(it has custom placement logic which isn't replicated here, so it'll be more likely to spawn irradiated)
 			
 			jcms.serverExtension_forcedEvac = true
+			PrintMessage(HUD_PRINTTALK, string.format("[Map Sweepers] Evac called. Cleanse-nuking of the map will commence in %d minutes", nukeTime) )
+		else
+			PrintMessage(HUD_PRINTTALK, string.format("[Map Sweepers] Cleanse-nuking of the map will commence in %d minutes", nukeTime) )
 		end
 		
-		timer.Simple(60 * 4, function() --4 mins
+		timer.Simple(60 * (nukeTime-1), function()
+			PrintMessage(HUD_PRINTTALK, "[Map Sweepers] Cleanse-nuking of the map will commence in 1 minute" )
+		end)
+
+		timer.Simple(60 * nukeTime, function() --3 mins
 			jcms.evacSuddenDeath_startTime = CurTime()
+			PrintMessage(HUD_PRINTTALK, "[Map Sweepers] Initiating cleanse-nuking of the map" )
+
 			hook.Add("Think", "jcms_serverExtension_evacSuddenDeath",evacSuddenDeathThink)
 		end)
 		
