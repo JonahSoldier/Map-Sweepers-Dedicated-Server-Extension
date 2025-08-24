@@ -23,7 +23,13 @@ AddCSLuaFile("autorun/client/cl_init.lua")
 	end
 
 	function jcms.ServerExtension_CheckShouldKick(ply)
-		--TODO: Null entity clean-up
+		--Null entity clean-up
+		for voter, _ in pairs(jcms.playerKickVoters[ply]) do
+			if not IsValid(voter) then 
+				jcms.playerKickVoters[ply][voter] = nil
+				jcms.playerKickVotes[ply] = jcms.playerKickVotes[ply] - 1
+			end
+		end
 
 		if jcms.playerKickVotes[ply] >= jcms.ServerExtension_GetVoteKickThreshold() then 
 			--No longer want this data.
@@ -157,6 +163,14 @@ AddCSLuaFile("autorun/client/cl_init.lua")
 	end
 
 	function jcms.ServerExtension_CheckShouldEvac()
+		--Null entity clean-up
+		for voter, _ in pairs(jcms.evacVoters) do
+			if not IsValid(voter) then 
+				jcms.evacVoters[voter] = nil
+				jcms.evacVotes = evacVotes - 1
+			end
+		end
+		
 		if not(jcms.evacVotes >= jcms.ServerExtension_GetEvacThreshold()) then return false end 
 		
 		local d = jcms.director
