@@ -20,8 +20,22 @@ hook.Add("OnChatTab", "jcms_serverExtension_chatTab_votekick", function(text)
 end)
 
 hook.Add("MapSweepersScoreboardPlayerMenu", "jcms_serverExtension_scoreboard", function(m, elem, ply, i)
+	if not jcms.cvar_votekick_enabled:GetBool() then return end
 	m:AddSpacer()
 	m:AddOption("Votekick", function()
 		RunConsoleCommand("say", "!votekick " .. ply:Nick())
 	end)
+end)
+
+
+hook.Add("MapSweepersScoreboardControls", "jcms_serverExtension_scoreboard", function(pnl)
+	if not jcms.cvar_voteEvac_enabled:GetBool() then return end 
+
+	local btn = pnl:Add("DButton")
+	btn:SetText("Vote to evacuate early")
+	btn:Dock(TOP)
+	btn.DoClick = function()
+		RunConsoleCommand( "say", "!evac" )
+	end
+	btn.Paint = jcms.paint_ButtonFilled
 end)

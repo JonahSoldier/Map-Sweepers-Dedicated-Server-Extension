@@ -49,6 +49,7 @@ AddCSLuaFile("autorun/client/cl_jcms_serverext_init.lua")
 
 	hook.Add( "PlayerSay", "jcms_serverExtension_votekick", function( ply, text )
 		if not string.StartsWith(string.lower(text), "!votekick") then return end
+		if not jcms.cvar_votekick_enabled:GetBool() then return end
 
 		--Is there a 2nd argument?
 		local exploded = string.Explode(" ", text)
@@ -163,6 +164,8 @@ AddCSLuaFile("autorun/client/cl_jcms_serverext_init.lua")
 	end
 
 	function jcms.ServerExtension_CheckShouldEvac()
+		if jcms.serverExtension_suddenDeath then return false end
+
 		--Null entity clean-up
 		for voter, _ in pairs(jcms.evacVoters) do
 			if not IsValid(voter) then 
@@ -204,12 +207,14 @@ AddCSLuaFile("autorun/client/cl_jcms_serverext_init.lua")
 		
 		jcms.evacVotes = 0
 		jcms.evacVoters = {}
+		jcms.serverExtension_suddenDeath = true
 		
 		return true
 	end
 
 	hook.Add( "PlayerSay", "jcms_serverExtension_evacvote", function( ply, text )
 		if not string.StartsWith(string.lower(text), "!evac") then return end
+		if not jcms.cvar_voteEvac_enabled:GetBool() then return end 
 
 		--Don't let us vote twice
 		if jcms.evacVoters[ply] then
