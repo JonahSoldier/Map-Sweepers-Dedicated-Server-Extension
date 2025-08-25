@@ -129,6 +129,11 @@ AddCSLuaFile("autorun/client/cl_jcms_serverext_init.lua")
 	jcms.evacSuddenDeath_startTime = 0
 	jcms.evacSuddenDeath_nextThink = 0
 	local function evacSuddenDeathThink()
+		if not jcms.director then 
+			hook.Remove("Think", "jcms_serverExtension_evacSuddenDeath")
+		end
+		
+	
 		local cTime = CurTime()
 		if jcms.evacSuddenDeath_nextThink > cTime then return end
 
@@ -155,10 +160,15 @@ AddCSLuaFile("autorun/client/cl_jcms_serverext_init.lua")
 		else
 			--If they're somehow still alive >1.5 min just nuke the bastards directly.
 			local swps = team.GetPlayers(1)
-			pos = swps[math.random(#swps)]:WorldSpaceCenter()
+			local swp = swps[math.random(#swps)]
+			if IsValid(swp) then
+				pos = swp:WorldSpaceCenter()
+			end
 		end
 		
-		jcms.ServerExtension_NukePosition(pos)
+		if pos then
+			jcms.ServerExtension_NukePosition(pos)
+		end
 		
 		jcms.evacSuddenDeath_nextThink = cTime + 10
 	end
@@ -195,10 +205,12 @@ AddCSLuaFile("autorun/client/cl_jcms_serverext_init.lua")
 		end
 		
 		timer.Simple(60 * (nukeTime-1), function()
+			if not jcms.director then return end
 			PrintMessage(HUD_PRINTTALK, "[Map Sweepers] Cleanse-nuking of the map will commence in 1 minute" )
 		end)
 
 		timer.Simple(60 * nukeTime, function() --3 mins
+			if not jcms.director then return end
 			jcms.evacSuddenDeath_startTime = CurTime()
 			PrintMessage(HUD_PRINTTALK, "[Map Sweepers] Initiating cleanse-nuking of the map" )
 
