@@ -129,7 +129,7 @@ AddCSLuaFile("autorun/client/cl_jcms_serverext_init.lua")
 	jcms.evacSuddenDeath_startTime = 0
 	jcms.evacSuddenDeath_nextThink = 0
 	local function evacSuddenDeathThink()
-		if not jcms.director then 
+		if not jcms.director or not jcms.serverExtension_forcedEvac then 
 			hook.Remove("Think", "jcms_serverExtension_evacSuddenDeath")
 		end
 		
@@ -205,12 +205,12 @@ AddCSLuaFile("autorun/client/cl_jcms_serverext_init.lua")
 		end
 		
 		timer.Simple(60 * (nukeTime-1), function()
-			if not jcms.director then return end
+			if not jcms.director or not jcms.serverExtension_forcedEvac then return end
 			PrintMessage(HUD_PRINTTALK, "[Map Sweepers] Cleanse-nuking of the map will commence in 1 minute" )
 		end)
 
 		timer.Simple(60 * nukeTime, function() --3 mins
-			if not jcms.director then return end
+			if not jcms.director or not jcms.serverExtension_forcedEvac then return end
 			jcms.evacSuddenDeath_startTime = CurTime()
 			PrintMessage(HUD_PRINTTALK, "[Map Sweepers] Initiating cleanse-nuking of the map" )
 
