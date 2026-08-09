@@ -101,31 +101,6 @@ AddCSLuaFile("autorun/client/cl_jcms_serverext_init.lua")
 		return math.ceil(player.GetCount() * jcms.cvar_voteEndRoundThreshold:GetFloat())
 	end
 	
-	function jcms.ServerExtension_NukePosition(pos)
-		local world = game.GetWorld()
-		util.BlastDamage(world, world, pos, 1500, 100)
-					
-		local ed = EffectData()
-		ed:SetOrigin(pos)
-		ed:SetFlags(6)
-		util.Effect("jcms_blast", ed)
-		
-		ed:SetScale(500)
-		ed:SetMagnitude(1.1)
-		ed:SetFlags(1)
-		util.Effect("jcms_blast", ed)
-		
-		util.ScreenShake(pos, 50, 50, 10, 6000, true)
-		local filter = RecipientFilter()
-		filter:AddAllPlayers()
-		EmitSound("ambient/explosions/explode_6.wav", pos, CHAN_AUTO, 1, 140, 0, 110, 0, 0, filter)
-		EmitSound("ambient/explosions/explode_2.wav", pos, CHAN_AUTO, 1, 100, 0, 140, 0, 0, filter)
-		
-		local radSphere = ents.Create("jcms_radsphere")
-		radSphere:SetPos(pos)
-		radSphere:Spawn()
-	end
-	
 	jcms.evacSuddenDeath_startTime = 0
 	jcms.evacSuddenDeath_nextThink = 0
 	local function evacSuddenDeathThink()
@@ -167,14 +142,14 @@ AddCSLuaFile("autorun/client/cl_jcms_serverext_init.lua")
 		end
 		
 		if pos then
-			jcms.ServerExtension_NukePosition(pos)
+			jcms.util_skyNuke(pos)
 		end
 		
 		jcms.evacSuddenDeath_nextThink = cTime + 10
 	end
 
 	function jcms.ServerExtension_CheckShouldEvac()
-		if jcms.serverExtension_suddenDeath then return false end
+		if jcms.serverExtension_suddenDeath or jcms.util_IsPVP() then return false end
 
 		--Null entity clean-up
 		for voter, _ in pairs(jcms.evacVoters) do
@@ -214,7 +189,7 @@ AddCSLuaFile("autorun/client/cl_jcms_serverext_init.lua")
 			jcms.evacSuddenDeath_startTime = CurTime()
 			PrintMessage(HUD_PRINTTALK, "[Map Sweepers] Initiating cleanse-nuking of the map" )
 
-			hook.Add("Think", "jcms_serverExtension_evacSuddenDeath",evacSuddenDeathThink)
+			hook.Add("Think", "jcms_serverExtension_evacSuddenDeath", evacSuddenDeathThink)
 		end)
 		
 		jcms.evacVotes = 0

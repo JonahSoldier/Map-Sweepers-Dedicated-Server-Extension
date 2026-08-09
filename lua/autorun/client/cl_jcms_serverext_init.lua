@@ -29,7 +29,7 @@ end)
 
 
 hook.Add("MapSweepersScoreboardControls", "jcms_serverExtension_scoreboard", function(pnl)
-	if not jcms.cvar_voteEvac_enabled:GetBool() then return end 
+	if not jcms.cvar_voteEvac_enabled:GetBool() or jcms.util_IsPVP() then return end 
 
 	local btn = pnl:Add("DButton")
 	btn:SetText("Vote to evacuate early")
