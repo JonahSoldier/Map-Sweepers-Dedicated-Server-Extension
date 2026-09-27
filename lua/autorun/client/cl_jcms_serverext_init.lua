@@ -23,7 +23,7 @@ hook.Add("MapSweepersScoreboardPlayerMenu", "jcms_serverExtension_scoreboard", f
 	if not jcms.cvar_votekick_enabled:GetBool() then return end
 	m:AddSpacer()
 	m:AddOption("Votekick", function()
-		RunConsoleCommand("say", "!votekick " .. ply:Nick())
+		RunConsoleCommand("jcms_votekick", ply:Nick())
 	end)
 end)
 

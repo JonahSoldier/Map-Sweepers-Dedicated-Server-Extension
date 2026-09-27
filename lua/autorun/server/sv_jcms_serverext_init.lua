@@ -13,6 +13,39 @@ AddCSLuaFile("autorun/client/cl_jcms_serverext_init.lua")
 	end
 -- // }}}
 
+concommand.Add("jcms_votekick", function( ply, cmd, args )
+	--Get the player entity from the 2nd argument's name
+	local targetStr = args[1]
+	local targetPly = jcms.ServerExtension_GetPlyFromStr( targetStr )
+
+	if not IsValid(targetPly) then 
+		ply:ChatPrint("Please enter a valid name (You can use tab to cycle options)")
+		return
+	end
+
+	--Make sure initial values are set
+	jcms.playerKickVoters[targetPly] = jcms.playerKickVoters[targetPly] or {}
+	jcms.playerKickVotes[targetPly] = jcms.playerKickVotes[targetPly] or 0
+
+	if jcms.playerKickVoters[targetPly][ply] then --Can't vote for the same person twice
+		ply:ChatPrint("You have already voted to kick this person.")
+		return
+	end
+
+	--Track our vote
+	jcms.playerKickVoters[targetPly][ply] = true
+	jcms.playerKickVotes[targetPly] = jcms.playerKickVotes[targetPly] + 1
+
+	--Printing a message to let everyone know
+	local required = jcms.ServerExtension_GetVoteKickThreshold()
+	local fracString = "[" .. tostring(jcms.playerKickVotes[targetPly]) .. "/" .. tostring(required) .. "]"
+
+	PrintMessage(HUD_PRINTTALK, ply:Name() .." voted to kick " .. targetStr .. " " .. fracString )
+
+	--Kick the guy (if there are enough votes)
+	jcms.ServerExtension_CheckShouldKick(targetPly)
+end)
+
 
 -- // VoteKick {{{
 	jcms.playerKickVotes = {} --Total
@@ -58,36 +91,7 @@ AddCSLuaFile("autorun/client/cl_jcms_serverext_init.lua")
 			return ""
 		end
 
-		--Get the player entity from the 2nd argument's name
-		local targetStr = exploded[2]
-		local targetPly = jcms.ServerExtension_GetPlyFromStr( targetStr )
-
-		if not IsValid(targetPly) then 
-			ply:ChatPrint("Please enter a valid name (You can use tab to cycle options)")
-			return ""
-		end
-		
-		--Make sure initial values are set
-		jcms.playerKickVoters[targetPly] = jcms.playerKickVoters[targetPly] or {}
-		jcms.playerKickVotes[targetPly] = jcms.playerKickVotes[targetPly] or 0
-
-		if jcms.playerKickVoters[targetPly][ply] then --Can't vote for the same person twice
-			ply:ChatPrint("You have already voted to kick this person.")
-			return ""
-		end
-
-		--Track our vote
-		jcms.playerKickVoters[targetPly][ply] = true
-		jcms.playerKickVotes[targetPly] = jcms.playerKickVotes[targetPly] + 1
-
-		--Printing a message to let everyone know
-		local required = jcms.ServerExtension_GetVoteKickThreshold()
-		local fracString = "[" .. tostring(jcms.playerKickVotes[targetPly]) .. "/" .. tostring(required) .. "]"
-
-		PrintMessage(HUD_PRINTTALK, ply:Name() .." voted to kick " .. targetStr .. " " .. fracString )
-
-		--Kick the guy (if there are enough votes)
-		jcms.ServerExtension_CheckShouldKick(targetPly)
+		ply:ConCommand("jcms_votekick "..exploded[2])
 		return ""
 	end)
 -- // }}}
@@ -107,7 +111,6 @@ AddCSLuaFile("autorun/client/cl_jcms_serverext_init.lua")
 		if not jcms.director or not jcms.serverExtension_forcedEvac then 
 			hook.Remove("Think", "jcms_serverExtension_evacSuddenDeath")
 		end
-		
 	
 		local cTime = CurTime()
 		if jcms.evacSuddenDeath_nextThink > cTime then return end
