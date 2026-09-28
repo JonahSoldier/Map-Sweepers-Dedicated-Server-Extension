@@ -158,7 +158,7 @@ end)
 		for voter, _ in pairs(jcms.evacVoters) do
 			if not IsValid(voter) then 
 				jcms.evacVoters[voter] = nil
-				jcms.evacVotes = evacVotes - 1
+				jcms.evacVotes = jcms.evacVotes - 1
 			end
 		end
 		
